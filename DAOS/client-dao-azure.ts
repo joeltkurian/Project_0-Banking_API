@@ -46,6 +46,10 @@ export default class ClientDao implements ClientDaoInterface{
     // CREATE ACCOUNT for CLIENT ID
     async createAccountforClientID(id: string, account: Account): Promise<Client>{
         let client:Client = await this.getClientByID(id);
+        let acc:Account[] = await this.getClientAccounts(client.id, null, null);
+        acc.find(c=>{if(c.name == account.name){
+            throw new ResourceNotFoundError(`Account cant be created due to another account with the same name!`);
+        }});
         client.accounts.push(account);
         const response = await container.item(id, id).replace<Client>(client);
         return response.resource;
