@@ -2,7 +2,7 @@ import { CosmosClient } from "@azure/cosmos";
 import {v4} from "uuid";
 import Account from "../Entities/account";
 import Client from "../Entities/client";
-import { insufficientFundsError, ResourceNotFoundError } from "../Errors/errorSet";
+import { insufficientFundsError, ResourceNotFoundError, wrongFundsError } from "../Errors/errorSet";
 
 
 const functs = require("../functs");
@@ -99,12 +99,19 @@ export default class ClientDao implements ClientDaoInterface{
             if(c.name === accountName){
                 checker = true;
                 if(action == 'withdraw'){
+                    if(Number(amount) < 0){
+                        throw new wrongFundsError(`Please Enter an appropriate amount > 0`)
+                    }
                     const num = c.balance - Number(amount);
                     if(num < 0)
                         throw new insufficientFundsError(`The account does not have enough funds to withdraw ${amount}!`);
                     c.balance -= Number(amount);
                 }
                 else if(action == 'deposit'){
+                    const num = Number(amount);
+                    if(num < 0){
+                        throw new wrongFundsError(`Cannot deposit an amount less than 0`);
+                    }
                     c.balance += Number(amount);
                 }
             }
